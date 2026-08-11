@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>سقاف موبايل | SAQAF MOBILE</title>
+    
+    <!-- الخطوط -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- الأيقونات -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --bg-1: #070809;
+            --bg-2: #0B0D10;
+            --bg-3: #111317;
+            --gold-1: #C99832;
+            --gold-2: #D8AC45;
+            --gold-3: #F0C766;
+            --silver-1: #BFC3C8;
+            --silver-2: #E2E4E7;
+            --text-main: #FFFFFF;
+            --text-sub: #D5D7DA;
+            --green-premium: #16a34a;
+            --glass-bg: rgba(17, 19, 23, 0.75);
+            --glass-border: rgba(216, 172, 69, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-1);
+            color: var(--text-main);
+            font-family: 'Cairo', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Typography & Scrollbar */
+        ::-webkit-scrollbar { width: 0px; height: 0px; background: transparent; }
+        
+        .gold-text {
+            background: linear-gradient(135deg, var(--gold-3), var(--gold-1));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        /* Splash Screen */
+        #splash {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-1);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+        #splash img {
+            width: 120px;
+            animation: splashAnim 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes splashAnim {
+            0% { transform: scale(0.8); opacity: 0; filter: drop-shadow(0 0 0 rgba(216, 172, 69, 0)); }
+            50% { opacity: 1; filter: drop-shadow(0 0 20px rgba(216, 172, 69, 0.5)); }
+            100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 10px rgba(216, 172, 69, 0.2)); }
+        }
+
+        /* Layout */
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            background: var(--bg-1);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            padding-bottom: 90px;
+        }
+
+        /* Views */
+        .view {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 24px 20px;
+            background: linear-gradient(to bottom, var(--bg-2), transparent);
+        }
+        .header img { width: 60px; margin-bottom: 10px; }
+        .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+        .header p { font-size: 13px; color: var(--text-sub); margin-top: 8px; line-height: 1.6; }
+
+        /* Sections & Banners */
+        .section { padding: 0 0 30px 0; }
+        .section-header {
+            padding: 0 20px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .section-header h2 { font-size: 18px; color: var(--gold-2); font-weight: 600; }
+        
+        .hero-banner {
+            margin: 0 20px 20px;
+            height: 140px;
+            border-radius: 16px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+        .hero-banner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, rgba(7,8,9,0.9), transparent);
+        }
+        .hero-banner-content {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+        .hero-banner h3 { font-size: 20px; color: #fff; margin-bottom: 5px; }
+        .hero-banner span { color: var(--gold-2); font-size: 12px; }
+
+        /* Carousel & Cards */
+        .carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 15px;
+            padding: 0 20px 20px;
+            scroll-behavior: smooth;
+        }
+        .product-card {
+            min-width: 160px;
+            max-width: 160px;
+            scroll-snap-align: start;
+            background: var(--bg-2);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            padding: 12px;
+            position: relative;
+            cursor: pointer;
+        }
+        .product-card .img-container {
+            width: 100%;
+            height: 130px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--bg-3);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .product-card img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .product-card h4 { font-size: 14px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .product-card .desc { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; line-height: 1.4; }
+        .price-row { display: flex; align-items: center; justify-content: space-between; }
+        .price { font-size: 15px; font-weight: 700; color: var(--gold-2); }
+        .currency { font-size: 10px; color: var(--silver-1); }
+        .old-price { font-size: 10px; color: #666; text-decoration: line-through; display: block; margin-top: -2px; }
+        .discount-badge {
+            position: absolute;
+            top: 8px; left: 8px;
+            background: var(--gold-1);
+            color: #000;
+            font-size: 10px; font-weight: 700;
+            padding: 2px 6px; border-radius: 4px;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 70px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 480px;
+            margin: 0 auto;
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--silver-1); font-size: 11px; font-weight: 600;
+            cursor: pointer; transition: var(--transition);
+            gap: 4px;
+        }
+        .nav-item.active { color: var(--gold-2); }
+        .nav-item.active i { transform: translateY(-2px); }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; animation: fadeModal 0.3s forwards; }
+        @keyframes fadeModal { from{opacity:0;} to{opacity:1;} }
+        
+        .product-modal {
+            background: var(--bg-2);
+            width: 100%;
+            max-width: 480px;
+            height: 90vh;
+            border-radius: 30px 30px 0 0;
+            padding: 24px;
+            position: relative;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            border-top: 1px solid var(--glass-border);
+        }
+        .modal-overlay.show .product-modal { transform: translateY(0); }
+        
+        .close-modal {
+            position: absolute; top: 20px; left: 20px;
+            background: var(--bg-3); width: 36px; height: 36px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--glass-border); color: var(--text-main); cursor: pointer;
+        }
+        
+        .modal-img {
+            width: 100%; height: 300px;
+            background: radial-gradient(circle, var(--bg-3) 0%, var(--bg-1) 100%);
+            border-radius: 20px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 24px; margin-top: 20px; position: relative;
+        }
+        .modal-img img { max-width: 90%; max-height: 90%; object-fit: contain; }
+        
+        .modal-title { font-size: 22px; margin-bottom: 10px; }
+        .modal-desc { font-size: 14px; color: var(--text-sub); line-height: 1.7; margin-bottom: 24px; }
+        
+        .modal-price-box {
+            background: var(--bg-3); border: 1px solid var(--glass-border);
+            padding: 16px; border-radius: 16px; margin-bottom: 30px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-price-box .m-price { font-size: 24px; font-weight: 700; color: var(--gold-2); }
+        .modal-price-box .m-old { text-decoration: line-through; color: #666; font-size: 14px; }
+        
+        .btn-buy {
+            width: 100%; background: var(--green-premium);
+            color: #fff; border: none; padding: 18px; border-radius: 16px;
+            font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: transform 0.2s;
+        }
+        .btn-buy:active { transform: scale(0.98); }
+
+        /* Notifications & Contact */
+        .page-header { padding: 30px 20px; border-bottom: 1px solid var(--bg-3); margin-bottom: 20px; }
+        .page-header h2 { font-size: 24px; }
+        
+        .notification-card {
+            background: var(--bg-2); border: 1px solid var(--glass-border);
+            padding: 16px; border-radius: 16px; margin: 0 20px 15px;
+            display: flex; gap: 15px;
+        }
+        .notif-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: var(--bg-3); display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; color: var(--gold-2);
+        }
+        .notif-content h4 { font-size: 15px; margin-bottom: 4px; }
+        .notif-content p { font-size: 12px; color: var(--text-sub); line-height: 1.5; }
+        .notif-date { font-size: 10px; color: #666; margin-top: 8px; display: block; }
+        
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--text-sub); }
+        .empty-state i { color: var(--bg-3); width: 64px; height: 64px; margin-bottom: 15px; }
+
+        .form-group { padding: 0 20px; margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; color: var(--silver-1); margin-bottom: 8px; }
+        .form-group input, .form-group textarea {
+            width: 100%; background: var(--bg-2); border: 1px solid var(--bg-3);
+            padding: 15px; border-radius: 12px; color: #fff; font-family: inherit; font-size: 14px;
+            transition: var(--transition);
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--gold-2); background: var(--bg-3);
+        }
+        .btn-send {
+            margin: 0 20px; width: calc(100% - 40px); background: linear-gradient(135deg, var(--gold-1), var(--gold-2));
+            color: #000; border: none; padding: 18px; border-radius: 12px;
+            font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center; padding: 30px 20px;
+            font-size: 10px; color: #555;
+        }
+        
+        /* Loading Skeleton */
+        .skeleton { background: linear-gradient(90deg, var(--bg-3) 25%, var(--bg-2) 50%, var(--bg-3) 75%); background-size: 400% 100%; animation: loading 1.5s infinite; }
+        @keyframes loading { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+    </style>
+</head>
+<body>
+
+    <!-- Splash Screen -->
+    <div id="splash">
+        <img src="logo.png" alt="سقاف موبايل" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI0Q4QUM0NSIvPjwvc3ZnPg=='">
+    </div>
+
+    <div class="app-container">
+        
+        <!-- View: Home -->
+        <div id="view-home" class="view active">
+            <header class="header">
+                <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+                <h1 class="gold-text">سقاف موبايل</h1>
+                <p>وجهتك الموثوقة لبيع وشراء وصيانة الجوالات والإكسسوارات بجودة وخدمة تستحق الثقة.</p>
+            </header>
+
+            <!-- Sales Section -->
+            <section class="section">
+                <div class="hero-banner" style="background-image: url('https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=800&auto=format&fit=crop');">
+                    <div class="hero-banner-content">
+                        <h3>مبيعات الجوال</h3>
+                        <span>أحدث الإصدارات العالمية</span>
+                    </div>
+                </div>
+                <div class="section-header">
+                    <h2>الأحدث</h2>
+                </div>
+                <div class="carousel" id="sales-carousel">
+                    <!-- Products will be injected here -->
+                </div>
+            </section>
+
+            <!-- Maintenance Section -->
+            <section class="section">
+                <div class="hero-banner" style="background-image: url('https://images.unsplash.com/photo-1597740985671-2a8a3b80502e?q=80&w=800&auto=format&fit=crop');">
+                    <div class="hero-banner-content">
+                        <h3>قسم الصيانة</h3>
+                        <span>احترافية وموثوقية</span>
+                    </div>
+                </div>
+                <div class="carousel" id="maintenance-carousel"></div>
+            </section>
+
+            <!-- Accessories Section -->
+            <section class="section">
+                <div class="hero-banner" style="background-image: url('https://images.unsplash.com/photo-1583394838336-acd977736f90?q=80&w=800&auto=format&fit=crop');">
+                    <div class="hero-banner-content">
+                        <h3>الإكسسوارات</h3>
+                        <span>تكملة لأناقة جهازك</span>
+                    </div>
+                </div>
+                <div class="carousel" id="accessories-carousel"></div>
+            </section>
+
+            <div class="footer">
+                تم الإنشاء عبر شركة Good Code / علي السياكل<br>774257557
+            </div>
+        </div>
+
+        <!-- View: Notifications -->
+        <div id="view-notifications" class="view">
+            <div class="page-header">
+                <h2 class="gold-text">الإشعارات</h2>
+            </div>
+            <div id="notifications-container">
+                <!-- Notifications here -->
+            </div>
+        </div>
+
+        <!-- View: Contact -->
+        <div id="view-contact" class="view">
+            <div class="page-header">
+                <h2 class="gold-text">تواصل معنا</h2>
+            </div>
+            <div class="form-group">
+                <label>الاسم الكامل</label>
+                <input type="text" id="contact-name" placeholder="أدخل اسمك">
+            </div>
+            <div class="form-group">
+                <label>رقم الجوال</label>
+                <input type="tel" id="contact-phone" placeholder="أدخل رقمك">
+            </div>
+            <div class="form-group">
+                <label>الاستفسار</label>
+                <textarea id="contact-msg" rows="4" placeholder="اكتب استفسارك هنا..."></textarea>
+            </div>
+            <button class="btn-send" onclick="sendContact()">إرسال عبر واتساب</button>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('home', this)">
+                <i data-lucide="home"></i>
+                <span>الرئيسية</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('notifications', this)">
+                <i data-lucide="bell"></i>
+                <span>الإشعارات</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('contact', this)">
+                <i data-lucide="headphones"></i>
+                <span>التواصل</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Product Details Modal -->
+    <div class="modal-overlay" id="product-modal">
+        <div class="product-modal">
+            <button class="close-modal" onclick="closeModal()">
+                <i data-lucide="x"></i>
+            </button>
+            <div class="modal-img">
+                <img id="modal-image" src="" alt="">
+            </div>
+            <h2 class="modal-title" id="modal-title">...</h2>
+            <div class="modal-price-box">
+                <div>
+                    <div class="m-price"><span id="modal-price"></span> <span style="font-size:12px; color:var(--silver-1)" id="modal-currency"></span></div>
+                    <div class="m-old" id="modal-old-price"></div>
+                </div>
+                <div style="text-align:left">
+                    <span id="modal-discount" style="color:var(--gold-2); font-size:14px; font-weight:bold;"></span>
+                </div>
+            </div>
+            <p class="modal-desc" id="modal-desc">...</p>
+            
+            <button class="btn-buy" onclick="buyProduct()">
+                <i data-lucide="shopping-cart"></i>
+                شراء الآن
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_8PipFlsUkP4UKsx4qUmhq0aXqaMP008",
+            authDomain: "wc-fantasy-9a504.firebaseapp.com",
+            databaseURL: "https://wc-fantasy-9a504-default-rtdb.firebaseio.com",
+            projectId: "wc-fantasy-9a504",
+            storageBucket: "wc-fantasy-9a504.firebasestorage.app",
+            messagingSenderId: "331151936050",
+            appId: "1:331151936050:web:8df745f007b5631ffb8a2b",
+            measurementId: "G-K2MFKNWVD6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // UI Logic
+        lucide.createIcons();
+
+        setTimeout(() => {
+            document.getElementById('splash').style.opacity = '0';
+            setTimeout(() => document.getElementById('splash').style.display = 'none', 500);
+        }, 1000);
+
+        window.switchTab = function(tabId, el) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        // Generate Skeletons
+        function generateSkeleton() {
+            return `
+                <div class="product-card skeleton">
+                    <div class="img-container"></div>
+                    <div style="height:15px; width:80%; background:var(--bg-3); margin-bottom:10px;"></div>
+                    <div style="height:10px; width:50%; background:var(--bg-3);"></div>
+                </div>
+            `.repeat(3);
+        }
+        ['sales', 'maintenance', 'accessories'].forEach(cat => {
+            document.getElementById(`${cat}-carousel`).innerHTML = generateSkeleton();
+        });
+
+        // Fetch Products
+        function loadCategory(category) {
+            onValue(ref(db, `products/${category}`), (snapshot) => {
+                const container = document.getElementById(`${category}-carousel`);
+                container.innerHTML = '';
+                const data = snapshot.val();
+                
+                if(!data) {
+                    container.innerHTML = `<div class="empty-state">لا توجد منتجات حالياً</div>`;
+                    return;
+                }
+
+                Object.values(data).reverse().forEach(prod => {
+                    const descWords = (prod.description || "").split(" ").slice(0, 5).join(" ") + "...";
+                    let oldPriceHTML = '';
+                    let discountHTML = '';
+                    
+                    if(prod.oldPrice && parseFloat(prod.oldPrice) > parseFloat(prod.price)) {
+                        oldPriceHTML = `<span class="old-price">${prod.oldPrice} ${prod.currency}</span>`;
+                        discountHTML = `<div class="discount-badge">خصم</div>`;
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.innerHTML = `
+                        ${discountHTML}
+                        <div class="img-container"><img src="${prod.image}" loading="lazy"></div>
+                        <h4>${prod.name}</h4>
+                        <div class="desc">${descWords}</div>
+                        <div class="price-row">
+                            <div>
+                                <span class="price">${prod.price}</span>
+                                <span class="currency">${prod.currency}</span>
+                                ${oldPriceHTML}
+                            </div>
+                        </div>
+                    `;
+                    card.onclick = () => openModal(prod, category);
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        loadCategory('sales');
+        loadCategory('maintenance');
+        loadCategory('accessories');
+
+        // Fetch Notifications
+        onValue(ref(db, 'notifications'), (snapshot) => {
+            const container = document.getElementById('notifications-container');
+            container.innerHTML = '';
+            const data = snapshot.val();
+            
+            if(!data) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="bell-off"></i>
+                        <p>لا توجد إشعارات جديدة</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            Object.values(data).reverse().forEach(notif => {
+                let icon = 'bell';
+                if(notif.type === 'offer') icon = 'tag';
+                if(notif.type === 'important') icon = 'alert-circle';
+                
+                const card = document.createElement('div');
+                card.className = 'notification-card';
+                card.innerHTML = `
+                    <div class="notif-icon"><i data-lucide="${icon}"></i></div>
+                    <div class="notif-content">
+                        <h4>${notif.title}</h4>
+                        <p>${notif.message}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        });
+
+        // Modal Logic
+        let currentProduct = null;
+        let currentCategory = '';
+
+        window.openModal = function(prod, cat) {
+            currentProduct = prod;
+            currentCategory = cat;
+            document.getElementById('modal-image').src = prod.image;
+            document.getElementById('modal-title').innerText = prod.name;
+            document.getElementById('modal-desc').innerText = prod.description;
+            document.getElementById('modal-price').innerText = prod.price;
+            document.getElementById('modal-currency').innerText = prod.currency;
+            
+            const oldPriceEl = document.getElementById('modal-old-price');
+            const discountEl = document.getElementById('modal-discount');
+            
+            if(prod.oldPrice && parseFloat(prod.oldPrice) > parseFloat(prod.price)) {
+                oldPriceEl.innerText = `${prod.oldPrice} ${prod.currency}`;
+                const diff = parseFloat(prod.oldPrice) - parseFloat(prod.price);
+                const perc = Math.round((diff / parseFloat(prod.oldPrice)) * 100);
+                discountEl.innerText = `خصم ${perc}%`;
+            } else {
+                oldPriceEl.innerText = '';
+                discountEl.innerText = '';
+            }
+            
+            document.getElementById('product-modal').classList.add('show');
+        }
+
+        window.closeModal = function() {
+            document.getElementById('product-modal').classList.remove('show');
+        }
+
+        // WhatsApp Logic
+        const phone = "+967779012084";
+        
+        window.buyProduct = function() {
+            if(!currentProduct) return;
+            const catName = currentCategory === 'sales' ? 'مبيعات الجوال' : (currentCategory === 'maintenance' ? 'الصيانة' : 'الإكسسوارات');
+            const msg = `السلام عليكم،\nأرغب في شراء المنتج التالي من سقاف موبايل:\n\nاسم المنتج: ${currentProduct.name}\nالسعر: ${currentProduct.price} ${currentProduct.currency}\nالتصنيف: ${catName}\n\nأرغب في معرفة التوفر وتفاصيل الشراء.`;
+            window.open(`https://wa.me/${phone.replace('+','')}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        window.sendContact = function() {
+            const name = document.getElementById('contact-name').value;
+            const userPhone = document.getElementById('contact-phone').value;
+            const inquiry = document.getElementById('contact-msg').value;
+            
+            if(!name || !inquiry) {
+                alert("يرجى تعبئة الاسم والاستفسار"); return;
+            }
+            
+            const msg = `السلام عليكم،\nلدي استفسار من تطبيق سقاف موبايل.\n\nالاسم:\n${name}\n\nرقم الجوال:\n${userPhone}\n\nالاستفسار:\n${inquiry}`;
+            window.open(`https://wa.me/${phone.replace('+','')}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+    </script>
+</body>
+</html>

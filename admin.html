@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم سقاف موبايل</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --bg-main: #0B0D10;
+            --bg-card: #111317;
+            --gold: #D8AC45;
+            --text-main: #FFFFFF;
+            --text-sub: #BFC3C8;
+            --border: rgba(216, 172, 69, 0.2);
+            --danger: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg-main); color: var(--text-main); font-family: 'Cairo', sans-serif; }
+
+        /* Login Screen */
+        #login-screen {
+            position: fixed; inset: 0; background: var(--bg-main);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .login-box {
+            background: var(--bg-card); padding: 40px; border-radius: 20px;
+            border: 1px solid var(--border); width: 90%; max-width: 400px; text-align: center;
+        }
+        .login-box img { width: 80px; margin-bottom: 20px; }
+        .input-group { margin-bottom: 20px; text-align: right; }
+        .input-group label { display: block; margin-bottom: 8px; color: var(--text-sub); font-size: 14px; }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%; padding: 12px; background: var(--bg-main); border: 1px solid var(--border);
+            color: #fff; border-radius: 8px; font-family: inherit; font-size: 14px;
+        }
+        .btn {
+            background: var(--gold); color: #000; border: none; padding: 12px 24px;
+            border-radius: 8px; font-weight: bold; cursor: pointer; font-family: inherit; width: 100%;
+        }
+        
+        /* Dashboard Layout */
+        #dashboard { display: none; height: 100vh; display: flex; flex-direction: column; }
+        .topbar {
+            background: var(--bg-card); padding: 15px 30px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .topbar h1 { font-size: 20px; color: var(--gold); display: flex; align-items: center; gap: 10px; }
+        .topbar img { width: 40px; }
+        
+        .main-content { display: flex; flex: 1; overflow: hidden; }
+        
+        .sidebar {
+            width: 250px; background: var(--bg-card); border-left: 1px solid var(--border);
+            padding: 20px 0; display: flex; flex-direction: column;
+        }
+        .nav-item {
+            padding: 15px 30px; display: flex; align-items: center; gap: 12px;
+            color: var(--text-sub); cursor: pointer; transition: 0.3s;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(216, 172, 69, 0.1); color: var(--gold); border-right: 3px solid var(--gold); }
+        
+        .content-area { flex: 1; padding: 30px; overflow-y: auto; }
+        
+        /* Stats & Headers */
+        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .stat-card h3 { color: var(--text-sub); font-size: 14px; }
+        .stat-card .num { font-size: 32px; color: var(--gold); font-weight: bold; margin-top: 10px; }
+
+        /* Tables & Lists */
+        .data-list { display: flex; flex-direction: column; gap: 15px; }
+        .data-row {
+            background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .data-info { display: flex; align-items: center; gap: 15px; }
+        .data-info img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: var(--bg-main); }
+        .data-text h4 { margin-bottom: 5px; }
+        .data-text p { font-size: 12px; color: var(--text-sub); }
+        .data-actions button {
+            background: transparent; border: 1px solid var(--border); color: #fff;
+            padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-right: 5px;
+        }
+        .data-actions button.edit { color: var(--gold); }
+        .data-actions button.delete { color: var(--danger); border-color: rgba(239, 68, 68, 0.3); }
+
+        /* Modals */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            display: none; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: var(--bg-card); width: 90%; max-width: 500px;
+            border-radius: 16px; border: 1px solid var(--border);
+            max-height: 90vh; overflow-y: auto; padding: 30px;
+        }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .modal-header i { cursor: pointer; }
+        
+        .image-preview {
+            width: 100px; height: 100px; border-radius: 10px; border: 1px dashed var(--gold);
+            display: flex; align-items: center; justify-content: center; margin-top: 10px;
+            background-size: cover; background-position: center; overflow: hidden;
+        }
+        .image-preview img { width: 100%; height: 100%; object-fit: cover; display: none; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: var(--gold); color: #000; padding: 12px 24px; border-radius: 8px;
+            font-weight: bold; transition: 0.3s; z-index: 3000; opacity: 0;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        @media(max-width: 768px) {
+            .main-content { flex-direction: column; }
+            .sidebar { width: 100%; border-left: none; border-bottom: 1px solid var(--border); flex-direction: row; padding: 0; overflow-x: auto; }
+            .nav-item { white-space: nowrap; }
+            .data-row { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .data-actions { width: 100%; display: flex; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login -->
+    <div id="login-screen">
+        <div class="login-box">
+            <img src="logo.png" alt="Logo">
+            <h2 style="margin-bottom: 20px; color: var(--gold);">تسجيل الدخول</h2>
+            <div class="input-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="admin-pass" placeholder="أدخل كلمة المرور">
+            </div>
+            <button class="btn" onclick="login()">دخول</button>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" style="display: none;">
+        <div class="topbar">
+            <h1><img src="logo.png" alt=""> سقاف موبايل - الإدارة</h1>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="nav-item active" onclick="switchTab('products', this)"><i data-lucide="box"></i> المنتجات</div>
+                <div class="nav-item" onclick="switchTab('notifications', this)"><i data-lucide="bell"></i> الإشعارات</div>
+            </div>
+            
+            <div class="content-area">
+                
+                <!-- Products View -->
+                <div id="view-products" class="view">
+                    <div class="header-actions">
+                        <h2>إدارة المنتجات</h2>
+                        <button class="btn" style="width: auto;" onclick="openProductModal()">+ إضافة منتج</button>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card"><h3>مبيعات الجوال</h3><div class="num" id="count-sales">0</div></div>
+                        <div class="stat-card"><h3>الصيانة</h3><div class="num" id="count-maint">0</div></div>
+                        <div class="stat-card"><h3>الإكسسوارات</h3><div class="num" id="count-acc">0</div></div>
+                    </div>
+
+                    <div class="data-list" id="products-list">
+                        <!-- Products Load Here -->
+                    </div>
+                </div>
+
+                <!-- Notifications View -->
+                <div id="view-notifications" class="view" style="display: none;">
+                    <div class="header-actions">
+                        <h2>إدارة الإشعارات</h2>
+                        <button class="btn" style="width: auto;" onclick="openNotifModal()">+ إضافة إشعار</button>
+                    </div>
+                    <div class="data-list" id="notif-list">
+                        <!-- Notifications Load Here -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" id="product-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="p-modal-title">إضافة منتج</h3>
+                <i data-lucide="x" onclick="closeModal('product-modal')"></i>
+            </div>
+            <input type="hidden" id="p-id">
+            <input type="hidden" id="p-old-image">
+            
+            <div class="input-group">
+                <label>القسم</label>
+                <select id="p-cat">
+                    <option value="sales">مبيعات الجوال</option>
+                    <option value="maintenance">الصيانة</option>
+                    <option value="accessories">الإكسسوارات</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>اسم المنتج</label>
+                <input type="text" id="p-name">
+            </div>
+            <div class="input-group">
+                <label>الوصف</label>
+                <textarea id="p-desc" rows="3"></textarea>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <div class="input-group" style="flex:1;">
+                    <label>السعر الجديد</label>
+                    <input type="number" id="p-price">
+                </div>
+                <div class="input-group" style="flex:1;">
+                    <label>السعر القديم (اختياري)</label>
+                    <input type="number" id="p-old">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>العملة</label>
+                <select id="p-currency">
+                    <option value="ر.ي">ريال يمني (ر.ي)</option>
+                    <option value="ر.س">ريال سعودي (ر.س)</option>
+                    <option value="$">دولار أمريكي ($)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>صورة المنتج</label>
+                <input type="file" id="p-image" accept="image/*" onchange="previewImage(this)">
+                <div class="image-preview" id="img-prev"><img id="img-prev-el" src=""></div>
+            </div>
+            
+            <button class="btn" id="btn-save-product" onclick="saveProduct()">حفظ المنتج</button>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div class="modal" id="notif-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="n-modal-title">إضافة إشعار</h3>
+                <i data-lucide="x" onclick="closeModal('notif-modal')"></i>
+            </div>
+            <input type="hidden" id="n-id">
+            
+            <div class="input-group">
+                <label>نوع الإشعار</label>
+                <select id="n-type">
+                    <option value="general">عام</option>
+                    <option value="new">جديد</option>
+                    <option value="offer">عرض</option>
+                    <option value="important">مهم</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>العنوان</label>
+                <input type="text" id="n-title">
+            </div>
+            <div class="input-group">
+                <label>النص</label>
+                <textarea id="n-msg" rows="3"></textarea>
+            </div>
+            
+            <button class="btn" onclick="saveNotif()">حفظ الإشعار</button>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div class="modal" id="delete-modal">
+        <div class="modal-content" style="text-align: center; max-width: 300px;">
+            <i data-lucide="alert-triangle" style="width: 50px; height: 50px; color: var(--danger); margin-bottom:15px;"></i>
+            <h3 style="margin-bottom: 20px;">هل أنت متأكد من الحذف؟</h3>
+            <div style="display:flex; gap:10px;">
+                <button class="btn" style="background:var(--bg-main); color:#fff;" onclick="closeModal('delete-modal')">إلغاء</button>
+                <button class="btn" style="background:var(--danger); color:#fff;" id="btn-confirm-delete">حذف</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">نجاح!</div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, set, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_8PipFlsUkP4UKsx4qUmhq0aXqaMP008",
+            authDomain: "wc-fantasy-9a504.firebaseapp.com",
+            databaseURL: "https://wc-fantasy-9a504-default-rtdb.firebaseio.com",
+            projectId: "wc-fantasy-9a504",
+            storageBucket: "wc-fantasy-9a504.firebasestorage.app",
+            messagingSenderId: "331151936050",
+            appId: "1:331151936050:web:8df745f007b5631ffb8a2b"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // ImageKit Config
+        const IK_ENDPOINT = "https://upload.imagekit.io/api/v1/files/upload";
+        const IK_PRIVATE = "private_2Hrx1ZE4YUHcuNTGxDhKvUcewp8=";
+        
+        lucide.createIcons();
+
+        // Login
+        window.login = function() {
+            if(document.getElementById('admin-pass').value === '779012084') {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'flex';
+                loadData();
+            } else {
+                alert("كلمة المرور خاطئة");
+            }
+        }
+
+        // Tabs
+        window.switchTab = function(tabId, el) {
+            document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+            document.getElementById('view-' + tabId).style.display = 'block';
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); }
+
+        // --- Products Logic ---
+        let allProducts = { sales: {}, maintenance: {}, accessories: {} };
+
+        function loadData() {
+            // Products
+            ['sales', 'maintenance', 'accessories'].forEach(cat => {
+                onValue(ref(db, `products/${cat}`), (snap) => {
+                    allProducts[cat] = snap.val() || {};
+                    document.getElementById(`count-${cat === 'maintenance' ? 'maint' : (cat==='accessories'?'acc':'sales')}`).innerText = Object.keys(allProducts[cat]).length;
+                    renderProducts();
+                });
+            });
+
+            // Notifications
+            onValue(ref(db, 'notifications'), (snap) => {
+                const list = document.getElementById('notif-list');
+                list.innerHTML = '';
+                const data = snap.val();
+                if(!data) return;
+                Object.entries(data).reverse().forEach(([id, notif]) => {
+                    list.innerHTML += `
+                        <div class="data-row">
+                            <div class="data-text">
+                                <h4 style="color:var(--gold)">${notif.title}</h4>
+                                <p>${notif.message}</p>
+                            </div>
+                            <div class="data-actions">
+                                <button class="edit" onclick='editNotif("${id}", ${JSON.stringify(notif).replace(/'/g, "\\'")})'><i data-lucide="edit-2"></i></button>
+                                <button class="delete" onclick="confirmDelete('notifications', '${id}')"><i data-lucide="trash-2"></i></button>
+                            </div>
+                        </div>`;
+                });
+                lucide.createIcons();
+            });
+        }
+
+        function renderProducts() {
+            const list = document.getElementById('products-list');
+            list.innerHTML = '';
+            
+            const catNames = { sales: 'مبيعات الجوال', maintenance: 'الصيانة', accessories: 'الإكسسوارات' };
+            
+            Object.keys(allProducts).forEach(cat => {
+                Object.entries(allProducts[cat]).reverse().forEach(([id, p]) => {
+                    list.innerHTML += `
+                        <div class="data-row">
+                            <div class="data-info">
+                                <img src="${p.image}">
+                                <div class="data-text">
+                                    <h4>${p.name}</h4>
+                                    <p>${catNames[cat]} | ${p.price} ${p.currency}</p>
+                                </div>
+                            </div>
+                            <div class="data-actions">
+                                <button class="edit" onclick='editProduct("${cat}", "${id}", ${JSON.stringify(p).replace(/'/g, "\\'")})'><i data-lucide="edit-2"></i></button>
+                                <button class="delete" onclick="confirmDelete('products/${cat}', '${id}')"><i data-lucide="trash-2"></i></button>
+                            </div>
+                        </div>`;
+                });
+            });
+            lucide.createIcons();
+        }
+
+        // Add/Edit Product
+        window.openProductModal = function() {
+            document.getElementById('p-modal-title').innerText = "إضافة منتج";
+            document.getElementById('p-id').value = "";
+            document.getElementById('p-name').value = "";
+            document.getElementById('p-desc').value = "";
+            document.getElementById('p-price').value = "";
+            document.getElementById('p-old').value = "";
+            document.getElementById('p-image').value = "";
+            document.getElementById('img-prev-el').style.display = 'none';
+            document.getElementById('p-old-image').value = "";
+            document.getElementById('product-modal').classList.add('active');
+        }
+
+        window.editProduct = function(cat, id, p) {
+            document.getElementById('p-modal-title').innerText = "تعديل منتج";
+            document.getElementById('p-id').value = id;
+            document.getElementById('p-cat').value = cat;
+            document.getElementById('p-name').value = p.name;
+            document.getElementById('p-desc').value = p.description;
+            document.getElementById('p-price').value = p.price;
+            document.getElementById('p-old').value = p.oldPrice || "";
+            document.getElementById('p-currency').value = p.currency;
+            document.getElementById('p-old-image').value = p.image;
+            
+            const imgEl = document.getElementById('img-prev-el');
+            imgEl.src = p.image;
+            imgEl.style.display = 'block';
+            
+            document.getElementById('product-modal').classList.add('active');
+        }
+
+        window.previewImage = function(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgEl = document.getElementById('img-prev-el');
+                    imgEl.src = e.target.result;
+                    imgEl.style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        window.saveProduct = async function() {
+            const btn = document.getElementById('btn-save-product');
+            const id = document.getElementById('p-id').value;
+            const cat = document.getElementById('p-cat').value;
+            const name = document.getElementById('p-name').value;
+            const desc = document.getElementById('p-desc').value;
+            const price = document.getElementById('p-price').value;
+            const oldPrice = document.getElementById('p-old').value;
+            const currency = document.getElementById('p-currency').value;
+            const fileInput = document.getElementById('p-image');
+            const oldImage = document.getElementById('p-old-image').value;
+
+            if(!name || !price || (!fileInput.files[0] && !oldImage)) {
+                alert("يرجى تعبئة الحقول الأساسية والصورة"); return;
+            }
+
+            btn.innerText = "جاري الحفظ...";
+            btn.disabled = true;
+
+            try {
+                let imageUrl = oldImage;
+                
+                // Upload image if new file selected
+                if(fileInput.files[0]) {
+                    const formData = new FormData();
+                    formData.append("file", fileInput.files[0]);
+                    formData.append("fileName", fileInput.files[0].name);
+                    
+                    const authHeader = "Basic " + btoa(IK_PRIVATE + ":");
+                    
+                    const res = await fetch(IK_ENDPOINT, {
+                        method: "POST",
+                        headers: { "Authorization": authHeader },
+                        body: formData
+                    });
+                    
+                    const data = await res.json();
+                    if(data.url) {
+                        imageUrl = data.url;
+                    } else {
+                        throw new Error("فشل رفع الصورة");
+                    }
+                }
+
+                const productData = {
+                    name, description: desc, price, oldPrice, currency, image: imageUrl, category: cat,
+                    updatedAt: new Date().toISOString()
+                };
+
+                if(id) {
+                    // Check if category changed
+                    let oldCat = "";
+                    ['sales', 'maintenance', 'accessories'].forEach(c => { if(allProducts[c][id]) oldCat = c; });
+                    
+                    if(oldCat && oldCat !== cat) {
+                        await remove(ref(db, `products/${oldCat}/${id}`));
+                    }
+                    await update(ref(db, `products/${cat}/${id}`), productData);
+                } else {
+                    productData.createdAt = new Date().toISOString();
+                    const newRef = push(ref(db, `products/${cat}`));
+                    await set(newRef, productData);
+                }
+
+                closeModal('product-modal');
+                showToast("تم حفظ المنتج بنجاح!");
+            } catch(e) {
+                alert(e.message);
+            } finally {
+                btn.innerText = "حفظ المنتج";
+                btn.disabled = false;
+            }
+        }
+
+        // Add/Edit Notification
+        window.openNotifModal = function() {
+            document.getElementById('n-modal-title').innerText = "إضافة إشعار";
+            document.getElementById('n-id').value = "";
+            document.getElementById('n-title').value = "";
+            document.getElementById('n-msg').value = "";
+            document.getElementById('notif-modal').classList.add('active');
+        }
+
+        window.editNotif = function(id, n) {
+            document.getElementById('n-modal-title').innerText = "تعديل إشعار";
+            document.getElementById('n-id').value = id;
+            document.getElementById('n-type').value = n.type;
+            document.getElementById('n-title').value = n.title;
+            document.getElementById('n-msg').value = n.message;
+            document.getElementById('notif-modal').classList.add('active');
+        }
+
+        window.saveNotif = async function() {
+            const id = document.getElementById('n-id').value;
+            const type = document.getElementById('n-type').value;
+            const title = document.getElementById('n-title').value;
+            const msg = document.getElementById('n-msg').value;
+
+            if(!title || !msg) { alert("أدخل العنوان والنص"); return; }
+
+            const data = { type, title, message: msg, date: new Date().toISOString() };
+            
+            if(id) await update(ref(db, `notifications/${id}`), data);
+            else {
+                const newRef = push(ref(db, 'notifications'));
+                await set(newRef, data);
+            }
+
+            closeModal('notif-modal');
+            showToast("تم الحفظ بنجاح!");
+        }
+
+        // Delete Logic
+        let deletePath = "";
+        window.confirmDelete = function(path, id) {
+            deletePath = `${path}/${id}`;
+            document.getElementById('delete-modal').classList.add('active');
+        }
+
+        document.getElementById('btn-confirm-delete').onclick = async function() {
+            if(deletePath) {
+                await remove(ref(db, deletePath));
+                closeModal('delete-modal');
+                showToast("تم الحذف بنجاح");
+            }
+        }
+
+    </script>
+</body>
+</html>
