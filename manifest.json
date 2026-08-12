@@ -1,0 +1,21 @@
+{
+  "name": "سقاف موبايل | Saggaf Mobile",
+  "short_name": "سقاف موبايل",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#08090B",
+  "theme_color": "#C89B3C",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
