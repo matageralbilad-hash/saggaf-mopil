@@ -710,47 +710,59 @@
             window.open(`https://wa.me/${phone.replace('+','')}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 // ==========================================
-        // PWA Install Logic (ذكاء زر التثبيت)
+        // PWA Install Logic (مطور ومحسّن)
         // ==========================================
         let deferredPrompt;
         const installBanner = document.getElementById('install-banner');
         const installBtn = document.getElementById('btn-install');
 
-        // التقاط حدث طلب التثبيت من المتصفح
+        // 1. تحقق أولاً: هل التطبيق مثبت بالفعل أو تم إلغاء الشريط؟
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        const isAlreadyInstalled = localStorage.getItem('app_installed') === 'true';
+
+        // التقاط حدث التثبيت من المتصفح
         window.addEventListener('beforeinstallprompt', (e) => {
-            // منع المتصفح من إظهار النافذة الافتراضية المزعجة من الأسفل
             e.preventDefault();
-            // حفظ الحدث لاستخدامه لاحقاً عند ضغط زرنا الفخم
             deferredPrompt = e;
-            // إظهار شريط التثبيت الخاص بنا
-            installBanner.style.display = 'flex';
-            // تحديث الأيقونات لضمان ظهور أيقونة التحميل
-            lucide.createIcons();
+
+            // إذا لم يكن التطبيق مثبتًا مسبقاً، اعرض الشريط
+            if (!isStandalone && !isAlreadyInstalled) {
+                installBanner.style.display = 'flex';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
         });
 
-        // ماذا يحدث عند الضغط على زر التثبيت الخاص بنا؟
+        // عند الضغط على زر التثبيت
         installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
-                // إظهار نافذة التثبيت الرسمية من نظام أندرويد
+                // تغيير نص الزر لإعلام المستخدم بما يحدث
+                installBtn.innerText = 'جارٍ التثبيت...';
+                installBtn.disabled = true;
+
+                // إظهار نافذة نظام أندرويد الرسمية
                 deferredPrompt.prompt();
-                
-                // انتظار رد المستخدم (هل وافق أم رفض؟)
+
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
                     console.log('تمت الموافقة على التثبيت');
-                    // إخفاء الشريط لأن التطبيق قيد التثبيت
+                    localStorage.setItem('app_installed', 'true');
                     installBanner.style.display = 'none';
+                    alert('جاري تثبيت "سقاف موبايل" على جوالك... راقب شريط الإشعارات في الأعلى.');
+                } else {
+                    // في حال التراجع
+                    installBtn.innerText = 'تثبيت الآن';
+                    installBtn.disabled = false;
                 }
-                // تصفير المتغير
                 deferredPrompt = null;
             }
         });
 
-        // إذا تم التثبيت بنجاح (إخفاء الشريط نهائياً)
+        // عند اكتمال التثبيت بنجاح على نظام أندرويد
         window.addEventListener('appinstalled', () => {
+            localStorage.setItem('app_installed', 'true');
             installBanner.style.display = 'none';
             deferredPrompt = null;
-            console.log('تم تثبيت التطبيق بنجاح!');
+            console.log('تم تثبيت تطبيق سقاف موبايل بنجاح!');
         });
     </script>
 <!-- تشغيل Service Worker PWA -->
